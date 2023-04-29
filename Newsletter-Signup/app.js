@@ -2,12 +2,22 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const request = require("request");
 const https = require("https");
+const fs = require("fs");
 
 
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
+const contents = fs.readFileSync(__dirname + "/api_key.txt", "utf-8");
+const apiKeys = contents.split("\n").reduce((result, line) => {
+  const [key, value] = line.split("=");
+  result[key] = value.trim();
+  return result;
+}, {});
+const myApiKey = apiKeys["API_ID"];
+const myListID = apiKeys["LIST_ID"];
 
 
 app.get("/", function (req, res) {
@@ -34,11 +44,11 @@ app.post("/", function (req, res) {
 
     const jsonData = JSON.stringify(data); 
 
-    var url = "https://us13.api.mailchimp.com/3.0/lists/17844491d9";
+    var url = "https://us13.api.mailchimp.com/3.0/lists/"+myListID;
 
     const options = {
       method: "POST",
-      auth: "arpan1:0cbab7fa6f87323c45d037de6b1967f9-us13",
+      auth: "arpan1:"+myApiKey,
     };
 
     const request = https.request(url, options, function (response) {
@@ -63,8 +73,3 @@ app.post("/", function (req, res) {
 app.listen("3000", function () {
     console.log("Server is running on port 3000.");
 })
-
-//API key
-//0cbab7fa6f87323c45d037de6b1967f9-us13
-//list id 
-//17844491d9
